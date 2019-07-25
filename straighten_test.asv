@@ -1,0 +1,26 @@
+=imread('straightenRH_test.jpg');
+IM = IM(:,:,1);
+load('straightenRH.mat')
+IM2 = straightenRH(IM,[x;y]',450);
+figure(1);clf;
+subplot(1,2,1);imagesc(IM);axis image off;hold on;plot(x,y,'o-')
+subplot(1,2,2);imagesc(IM2');axis image off
+
+%% to get the points from the image
+IM=imread('straightenRH_test.jpg');
+f = figure(1);clf;
+imagesc(IM);axis image off;
+hold on;
+[x,y,b]=ginput(1);
+plot(x,y,'o-');hold off
+while b~=3
+    [x_,y_,b]=ginput(1);
+    if b==8 %backspace
+        x(end)=[];y(end)=[];
+    else
+        x=[x,x_];y=[y,y_];
+    end
+    f.Children(1).Children(1).XData=x;
+    f.Children(1).Children(1).YData=y;
+end
+save('straghtenRH'
