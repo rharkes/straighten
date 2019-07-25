@@ -72,19 +72,31 @@ end
 function [xspl,yspl] = fitSplineForStraightening(xVal,yVal)
 %return a spline fit with distances of 1 between the points
 %based on https://github.com/imagej/imagej1/blob/master/ij/gui/PolygonRoi.java#L1006
-dx=0.1;
+
+%get linelength in pixels
+tL = sum(sqrt(diff(xVal).^2+diff(yVal).^2));
+%generate intermediate spline with approximately half pixel steps 
 pp = spline(xVal,yVal);
-xspl(1)=xVal(1);yspl(1)=yVal(1);
-xspl(2)=xVal(1);yspl(2)=yVal(1);
-ct=2;
-while xspl(end-1)<xVal(end)
-    xspl(ct)=xspl(ct)+dx;
-    yspl(ct)=ppval(pp,xspl(ct));
-    d = (xspl(ct-1)-xspl(ct))^2+(yspl(ct-1)-yspl(ct))^2;
-    if d>1
-        ct=ct+1;
-        xspl(ct)=xspl(ct-1);
+xIspl = linspace(xVal(1),xVal(end),round(tL*2));
+yIspl = ppval(pp,xIspl);
+L=0;%measure spline distance
+%generate spline
+xspl(1) = xVal(1);
+yspl(1) = yVal(1);
+L=0; %keep track of length of spline
+ptw = 1; %points written
+for ct = 2:length(xIspl)
+    dx=xIspl(ct)-xIspl(ct-1);
+    dy=yIspl(ct)-yIspl(ct-1);
+    d = sqrt(dx^2+dy^2);
+    L=L+d;
+    overshoot = L-ptw;
+    if overshoot>0 %we went over the length, must add a point on the spline
+        ptw=ptw+1;
+        frac = overshoot/d; %fractional overshoot for the last step
+        %move back in a straight line towards the previous point
+        xspl(ptw) = xIspl(ct) - frac*dx;
+        yspl(ptw) = yIspl(ct) - frac*dy;
     end
 end
-xspl(end)=[];
 end
