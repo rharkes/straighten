@@ -1,6 +1,6 @@
-function [IM2] = straightenRH(IM,pts,width)
+function [IM2] = straighten(IM,pts,width)
 %STRAIGHTEN Straightens an image based on the spline interpolation between
-%the input points. 
+%the input points.
 % based on the straightenLine function in the Straightener plugin from ImageJ1
 % https://github.com/imagej/imagej1/blob/master/ij/plugin/Straightener.java#L101
 % https://github.com/imagej/imagej1/blob/master/ij/gui/PolygonRoi.java
@@ -32,12 +32,12 @@ for ct = 1:length(x)
         dy = y(ct-1)-y(ct);
     end
     %want to move 1 pixel when we move the pointer dx dy
-    L = sqrt(dx^2+dy^2); 
-    dx = dx/L; 
+    L = sqrt(dx^2+dy^2);
+    dx = dx/L;
     dy = dy/L;
     
     xStart = x(ct)-(dy*width)/2; %start half the width away
-    yStart = y(ct)-(dx*width)/2; 
+    yStart = y(ct)-(dx*width)/2;
     if debug
         figure(1);clf;
         imagesc(IM);axis image;hold on;
@@ -57,7 +57,7 @@ end
 
 function I = getInterpolatedValue(IM,y,x)
 % interpolation of pixelvalues one-indexed
-% IM = [0,1,2;2,3,4;4,5,6]; 
+% IM = [0,1,2;2,3,4;4,5,6];
 % getInterpolatedValue(IM,1,1);
 % > 0
 x = [floor(x),ceil(x),rem(x,1)];
@@ -73,11 +73,9 @@ function [xspl,yspl] = fitSplineForStraightening(xVal,yVal)
 %return a spline fit with distances of 1 between the points
 %based on https://github.com/imagej/imagej1/blob/master/ij/gui/PolygonRoi.java#L1006
 
-%get linelength in pixels
-tL = sum(sqrt(diff(xVal).^2+diff(yVal).^2));
-%generate intermediate spline with approximately half pixel steps 
+%generate intermediate spline with approximately half pixel steps
 pp = spline(xVal,yVal);
-xIspl = linspace(xVal(1),xVal(end),round(tL*2));
+xIspl = interpolate(xVal,yVal,0.5);
 yIspl = ppval(pp,xIspl);
 L=0;%measure spline distance
 %generate spline
@@ -98,5 +96,15 @@ for ct = 2:length(xIspl)
         xspl(ptw) = xIspl(ct) - frac*dx;
         yspl(ptw) = yIspl(ct) - frac*dy;
     end
+end
+end
+
+function [Xi] = interpolate(xVal,yVal,d)
+%interpolate line with aproximate distance d between points
+Xi = [];
+dists = sqrt(diff(xVal).^2+diff(yVal).^2); %segment distances 
+for ct = 1:length(xVal)-1
+    x = linspace(xVal(ct),xVal(ct+1),round(dists(ct)/d)+1);x(end)=[];
+    Xi = [Xi,x];
 end
 end

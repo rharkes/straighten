@@ -4,7 +4,7 @@ IM2 = straighten(IM,[x;y]',450);
 figure(1);clf;
 subplot(1,2,1);imagesc(IM);axis image off;hold on;plot(x,y,'o-')
 subplot(1,2,2);imagesc(permute(IM2,[2,1,3])./255);axis image off
-
+saveas(gcf,'straighten_result.jpg');
 %% to get the points from the image
 % IM=imread('straighten_test.jpg');
 % f = figure(1);clf;
